@@ -58,7 +58,7 @@ const getRandomWord = () => `${lorum[genRandomIndex(lorum)]}`;
 const getRandomText = (words) => {
   let text = '';
   for (let i = 0; i < words; i++) {
-    post += ` ${getRandomWord()}`;
+    text += ` ${getRandomWord()}`;
   }
   return text;
 };

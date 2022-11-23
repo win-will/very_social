@@ -1,6 +1,6 @@
 const { Schema, model } = require('mongoose');
 
-// Schema to create User model
+// Schema to create Thoughts model
 const thoughtsSchema = new Schema(
   {
     thoughtText: String,
@@ -26,6 +26,13 @@ const thoughtsSchema = new Schema(
   }
 );
 
+//Create virtual property reactionCount
+thoughtsSchema
+  .virtual('reactionCount')
+  // Getter
+  .get(function () {
+    return this.reactions.length;
+  });
 // Initialize our User model
 const Thoughts = model('thoughts', thoughtsSchema);
 

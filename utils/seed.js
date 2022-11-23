@@ -1,61 +1,67 @@
 const { text } = require('express');
+const { isObjectIdOrHexString } = require('mongoose');
 const connection = require('../config/connection');
-const { Users, Thoughts, Reactions } = require('../models');
+const { User, Thoughts, Reactions } = require('../models');
 // Import functions for seed data
-const { getRandomUsername, getRandomText, getRandomWord, genRandomIndex } = require('./data');
+const { getRandomUsername, getRandomText, genRandomIndex } = require('./data');
 
 // Start the seeding runtime timer
 console.time('seeding');
 
 // Creates a connection to mongodb
 connection.once('open', async () => {
-  // Delete the entries in the collection
-  await Users.deleteMany({});
+  // Delete the entries in the collections
+  await User.deleteMany({});
   await Thoughts.deleteMany({});
   await Reactions.deleteMany({});
 
-  // Empty arrays for randomly generated posts and tags
   const usernames = [];
   const thoughts = [];
   const reactions = [];
 
-  // Function to make a post object and push it into the posts array
-  const makeReactions = (username, text) => {
-    reactions.push({
-      username: username,
-      reactionBody: text,
-    });
-  };
-
-  const makeThoughts = (username, text) => {
-    thoughts.push({
-      username: username,
-      thoughtsBody: text,
-      reactions: [reactions[genRandomIndex(reactions)]._id],
-    });
-  };
-
-  // Create 20 random tags and push them into the tags array
   for (let i = 0; i < 10; i++) {
-    const username = getRandomUsername();
 
     usernames.push({
-      username: username,
+      username: getRandomUsername(),
     });
   }
 
-  // Wait for the tags to be inserted into the database
-  await Users.collection.insertMany(tags);
+  await User.collection.insertMany(usernames);
 
-  // For each of the tags that exist, make a random post of length 50
-  tags.forEach(() => makePost(getRandomPost(50)));
+  for (let i = 0; i < 20; i++) {
+    reactions.push({
+      username: usernames[genRandomIndex(usernames)].username,
+      reactionBody: getRandomText(3),
+    });
+  }
 
-  // Wait for the posts array to be inserted into the database
-  await Post.collection.insertMany(posts);
+  await Reactions.collection.insertMany(reactions);
 
-  // Log out a pretty table for tags and posts, excluding the excessively long text property
-  console.table(tags);
-  console.table(posts, ['published', 'tags', '_id']);
+  for (let i = 0; i < 15; i++) {
+    thoughts.push({
+      username: usernames[genRandomIndex(usernames)].username,
+      thoughtsBody: getRandomText(7),
+      reactions: [reactions[genRandomIndex(reactions)]._id],
+    });
+  }
+
+  await Thoughts.collection.insertMany(thoughts);
+  
+  for (let i = 0; i < usernames.length; i++) {
+
+
+    User.findOneAndUpdate(
+      { _id:  usernames[i]._id},
+      { email: `${usernames[i].username}@test.com`,
+        thoughts: [thoughts[genRandomIndex(thoughts)]._id],
+
+       },
+    );
+  }
+
+  console.table(usernames);
+  console.table(thoughts);
+  console.table(reactions);
   console.timeEnd('seeding');
   process.exit(0);
 });
