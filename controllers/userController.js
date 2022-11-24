@@ -58,7 +58,7 @@ module.exports = {
           //delete reactions associated with user as well
           //pull friends of user
       )
-      .then(() => res.json({ message: 'User and associated thoughts deleted!' }))
+      .then(() => res.json({ message: 'User and associated thoughts and reactions deleted!' }))
       .catch((err) => res.status(500).json(err));
   },
   // Adds a friend to an user. This method is unique in that we add the entire body of the  rather than the ID with the mongodb $addToSet operator.

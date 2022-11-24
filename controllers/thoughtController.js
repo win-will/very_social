@@ -8,27 +8,33 @@ module.exports = {
       .then((thoughts) => res.json(thoughts))
       .catch((err) => res.status(500).json(err));
   },
-  // Gets a single application using the findOneAndUpdate method. We pass in the ID of the application and then respond with it, or an error if not found
+  // Gets a single thought using the findOneAndUpdate method. We pass in the ID of the thought and then respond with it, or an error if not found
   getSingleThought(req, res) {
     Thoughts.findOne({ _id: req.params.thoughtId })
       .then((thought) =>
         !thought
           ? res.status(404).json({ message: 'No thought with that ID' })
-          : res.json(user)
+          : res.json(thought)
       )
       .catch((err) => res.status(500).json(err));
   },
-  // Creates a new application. Accepts a request body with the entire Application object.
-  // Because applications are associated with Users, we then update the User who created the app and add the ID of the application to the applications array
+  // Creates a thought. Accepts a request body with the entire Thought object.
   createThought(req, res) {
     Thoughts.create(req.body)
-      .then((thought) => res.json(thought))
+      .then((thought) => {
+        User.findOneAndUpdate(
+          { username: thought.username },
+          { $addToSet: { thoughts: thought._id } },
+          { runValidators: true, new: true }
+        );
+        res.json(thought);
+      })
       .catch((err) => res.status(500).json(err));
   },
-  // Updates and application using the findOneAndUpdate method. Uses the ID, and the $set operator in mongodb to inject the request body. Enforces validation.
+  // Updates thought using the findOneAndUpdate method. Uses the ID, and the $set operator in mongodb to inject the request body. Enforces validation.
   updateThought(req, res) {
     Thoughts.findOneAndUpdate(
-      { _id: req.params.userId },
+      { _id: req.params.thoughtId },
       { $set: req.body },
       { runValidators: true, new: true }
     )
@@ -42,21 +48,47 @@ module.exports = {
         res.status(500).json(err);
       });
   },
-  // Deletes an application from the database. Looks for an app by ID.
-  // Then if the app exists, we look for any users associated with the app based on he app ID and update the applications array for the User.
+  // Deletes a thought from the database. Looks for an app by ID.
   deleteThought(req, res) {
-    Thoughts.findOneAndDelete({ _id: req.params.userId })
+    Thoughts.findOneAndDelete({ _id: req.params.thoughtId })
       .then((thought) =>
         !thought
           ? res.status(404).json({ message: 'No thought with that ID' })
           : ( Reactions.deleteMany({ _id: { $in: thought.reactions } }),
-              User.updateMany(
-                { },
+              User.findOneAndUpdate(
+                { username: thought.username },
                 { $pull: {thoughts: { thoughtId: thought._id } } }
+
               )
             )
       )
       .then(() => res.json({ message: 'Thought and associated reactions deleted!' }))
       .catch((err) => res.status(500).json(err));
   },
+    // Adds a reaction to a thought. This method is unique in that we add the entire body of the  rather than the ID with the mongodb $addToSet operator.
+    addReaction(req, res) {
+      
+      Reactions.create(req.body)
+        .then((reaction) => {
+          Thoughts.findOneAndUpdate(
+        { _id: req.params.thoughtId },
+        { $addToSet: { reactions: reaction._id} },
+        { runValidators: true, new: true }
+        )
+
+        })
+        .catch((err) => res.status(500).json(err));
+    },
+    // Remove reaction from thought. This method finds the reaction based on ID. It then updates the reactions array associated with the thought in question by removing it's reactionId from the reactions array.
+    removeReaction(req, res) {
+      Reactions.findOneAndDelete({ _id: req.params.reactionId })
+        .then((reaction) => {
+          Thoughts.findOneAndUpdate(
+            { _id: req.params.thoughtId },
+            { $pull: {reactions: { reactionId: reaction._id } } }
+
+          )
+        })
+        .catch((err) => res.status(500).json(err));
+    },
 };

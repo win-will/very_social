@@ -47,7 +47,7 @@ module.exports = {
       .then((reaction) =>
         !reaction
           ? res.status(404).json({ message: 'No reaction with that ID' })
-          : Thoughts.updateMany(
+          : User.updateMany(
             { },
             { $pull: {reactions: { reactionId: reaction._id } } }
           )
