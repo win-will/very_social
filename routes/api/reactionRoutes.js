@@ -16,3 +16,5 @@ router
   .get(getSingleReaction)
   .put(updateReaction)
   .delete(deleteReaction);
+
+  module.exports = router;
