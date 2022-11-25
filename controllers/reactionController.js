@@ -49,7 +49,7 @@ module.exports = {
           ? res.status(404).json({ message: 'No reaction with that ID' })
           : User.updateMany(
             { },
-            { $pull: {reactions: { reactionId: reaction._id } } }
+            { $pull: {reactions: reaction._id } }
           )
       )
       .then(() => res.json({ message: 'Reaction deleted!' }))

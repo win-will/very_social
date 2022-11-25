@@ -1,5 +1,5 @@
-const { text } = require('express');
-const { isObjectIdOrHexString } = require('mongoose');
+//const { text } = require('express');
+const { ObjectId } = require('mongodb');
 const connection = require('../config/connection');
 const { User, Thoughts, Reactions } = require('../models');
 // Import functions for seed data
@@ -28,35 +28,39 @@ connection.once('open', async () => {
 
   await User.collection.insertMany(usernames);
 
-  for (let i = 0; i < 20; i++) {
+  for (let i = 0; i < 10; i++) {
     reactions.push({
-      username: usernames[genRandomIndex(usernames)].username,
+      username: usernames[i].username,
       reactionBody: getRandomText(3),
     });
   }
 
   await Reactions.collection.insertMany(reactions);
 
-  for (let i = 0; i < 15; i++) {
+  for (let i = 0; i < 10; i++) {
     thoughts.push({
-      username: usernames[genRandomIndex(usernames)].username,
+      username: usernames[i].username,
       thoughtsBody: getRandomText(7),
-      reactions: [reactions[genRandomIndex(reactions)]._id],
+      reactions: [reactions[i]._id],
     });
   }
 
   await Thoughts.collection.insertMany(thoughts);
   
   for (let i = 0; i < usernames.length; i++) {
+    // console.log(usernames[i].username);
+    // console.log(ObjectId(usernames[i]._id.toString()));
 
-
-    User.findOneAndUpdate(
-      { _id:  usernames[i]._id},
+    let user = await User.findOneAndUpdate(
+      { _id: usernames[i]._id },
       { email: `${usernames[i].username}@test.com`,
-        thoughts: [thoughts[genRandomIndex(thoughts)]._id],
-
-       },
+        thoughts: [thoughts[i]._id],
+      },
+      {
+        new: true
+      }
     );
+    // console.log(user.email);
   }
 
   console.table(usernames);

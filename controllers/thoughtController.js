@@ -51,13 +51,13 @@ module.exports = {
   // Deletes a thought from the database. Looks for an app by ID.
   deleteThought(req, res) {
     Thoughts.findOneAndDelete({ _id: req.params.thoughtId })
-      .then((thought) =>
+      .then(async (thought) =>
         !thought
           ? res.status(404).json({ message: 'No thought with that ID' })
-          : ( Reactions.deleteMany({ _id: { $in: thought.reactions } }),
-              User.findOneAndUpdate(
+          : ( await Reactions.deleteMany({ _id: { $in: thought.reactions } }),
+              await User.findOneAndUpdate(
                 { username: thought.username },
-                { $pull: {thoughts: { thoughtId: thought._id } } }
+                { $pull: {thoughts: thought._id } }
 
               )
             )
@@ -66,29 +66,31 @@ module.exports = {
       .catch((err) => res.status(500).json(err));
   },
     // Adds a reaction to a thought. This method is unique in that we add the entire body of the  rather than the ID with the mongodb $addToSet operator.
-    addReaction(req, res) {
+    async addReaction(req, res) {
       
-      Reactions.create(req.body)
-        .then((reaction) => {
-          Thoughts.findOneAndUpdate(
-        { _id: req.params.thoughtId },
-        { $addToSet: { reactions: reaction._id} },
-        { runValidators: true, new: true }
-        )
-
+      await Reactions.create(req.body)
+        .then(async (reaction) => {
+        await Thoughts.findOneAndUpdate(
+          { _id: req.params.thoughtId },
+          { $addToSet: { reactions: reaction._id} },
+          { runValidators: true, new: true }
+        );
+        
+        res.json(reaction);
         })
         .catch((err) => res.status(500).json(err));
     },
     // Remove reaction from thought. This method finds the reaction based on ID. It then updates the reactions array associated with the thought in question by removing it's reactionId from the reactions array.
-    removeReaction(req, res) {
-      Reactions.findOneAndDelete({ _id: req.params.reactionId })
-        .then((reaction) => {
-          Thoughts.findOneAndUpdate(
+    async removeReaction(req, res) {
+      await Reactions.findOneAndDelete({ _id: req.params.reactionId })
+        .then(async (reaction) => {
+          await Thoughts.findOneAndUpdate(
             { _id: req.params.thoughtId },
-            { $pull: {reactions: { reactionId: reaction._id } } }
+            { $pull: {reactions: reaction._id } }
 
           )
         })
+        .then(() => res.json({ message: 'Reaction deleted and removed assocations to thoughts and users!' }))
         .catch((err) => res.status(500).json(err));
     },
 };

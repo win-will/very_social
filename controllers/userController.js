@@ -1,4 +1,5 @@
 const { User, Thoughts, Reactions } = require('../models');
+const { ObjectId } = require('mongodb');
 
 module.exports = {
   // Function to get all of the user by invoking the find() method with no arguments.
@@ -45,15 +46,17 @@ module.exports = {
   // Then if the User exists, we look for any users associated with the thoughts based on he user ID.
   deleteUser(req, res) {
     User.findOneAndDelete({ _id: req.params.userId })
-      .then((user) =>
+      .then(async (user) => 
         !user
           ? res.status(404).json({ message: 'No user with that ID' })
-          : ( Thoughts.deleteMany({ _id: { $in: user.thoughts } }),
-              Reactions.deleteMany({ username: user.username }),
-              User.updateMany(
+          : ( await Thoughts.deleteMany({ _id: { $in: user.thoughts } }),
+              await Reactions.deleteMany({ username: user.username }),
+              await User.updateMany(
                 { },
                 { $pull: {friends: { userId: user._id } } }
-              )
+              ),
+              console.log(user.username),
+              console.log(user.thoughts)
             )
           //delete reactions associated with user as well
           //pull friends of user
@@ -65,7 +68,7 @@ module.exports = {
   addFriend(req, res) {
     User.findOneAndUpdate(
       { _id: req.params.userId },
-      { $addToSet: { friends: req.body.friendId } },
+      { $addToSet: { friends: req.params.friendId } },
       { runValidators: true, new: true }
     )
       .then((user) =>
@@ -79,7 +82,7 @@ module.exports = {
   removeFriend(req, res) {
     User.findOneAndUpdate(
       { _id: req.params.userId },
-      { $pull: { friends: { userId: req.params.friendId } } },
+      { $pull: { friends: req.params.friendId } },
       { runValidators: true, new: true }
     )
       .then((user) =>
