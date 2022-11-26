@@ -11,6 +11,7 @@ module.exports = {
   // Gets a single thought using the findOneAndUpdate method. We pass in the ID of the thought and then respond with it, or an error if not found
   getSingleThought(req, res) {
     Thoughts.findOne({ _id: req.params.thoughtId })
+      .populate('reactions')
       .then((thought) =>
         !thought
           ? res.status(404).json({ message: 'No thought with that ID' })
@@ -59,10 +60,11 @@ module.exports = {
                 { username: thought.username },
                 { $pull: {thoughts: thought._id } }
 
-              )
+              ),
+              res.json({ message: 'Thought and associated reactions deleted!' })
             )
       )
-      .then(() => res.json({ message: 'Thought and associated reactions deleted!' }))
+      //.then(() => res.json({ message: 'Thought and associated reactions deleted!' }))
       .catch((err) => res.status(500).json(err));
   },
     // Adds a reaction to a thought. This method is unique in that we add the entire body of the  rather than the ID with the mongodb $addToSet operator.
@@ -74,8 +76,9 @@ module.exports = {
           { _id: req.params.thoughtId },
           { $addToSet: { reactions: reaction._id} },
           { runValidators: true, new: true }
-        );
-        
+        )
+        .catch((err) => res.status(500).json(err));
+
         res.json(reaction);
         })
         .catch((err) => res.status(500).json(err));
@@ -84,13 +87,18 @@ module.exports = {
     async removeReaction(req, res) {
       await Reactions.findOneAndDelete({ _id: req.params.reactionId })
         .then(async (reaction) => {
-          await Thoughts.findOneAndUpdate(
-            { _id: req.params.thoughtId },
-            { $pull: {reactions: reaction._id } }
+          !thought
+          ? res.status(404).json({ message: 'No reaction with that ID' })
+          : ( await Thoughts.findOneAndUpdate(
+              { _id: req.params.thoughtId },
+              { $pull: {reactions: reaction._id } }
 
+            ),
+            res.json({ message: 'Reaction deleted and removed assocations to thoughts and users!' })
           )
+    
         })
-        .then(() => res.json({ message: 'Reaction deleted and removed assocations to thoughts and users!' }))
+        //.then(() => res.json({ message: 'Reaction deleted and removed assocations to thoughts and users!' }))
         .catch((err) => res.status(500).json(err));
     },
 };

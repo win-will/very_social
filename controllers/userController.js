@@ -12,6 +12,13 @@ module.exports = {
   // Gets a single user using the findOneAndUpdate method. We pass in the ID of the user and then respond with it, or an error if not found
   getSingleUser(req, res) {
     User.findOne({ _id: req.params.userId })
+      .populate('thoughts')
+      .populate('friends')
+      .populate({
+        path: 'thoughts',
+        // Get friends of friends - populate the 'friends' array for every friend
+        populate: { path: 'reactions' }
+      })
       .then((user) =>
         !user
           ? res.status(404).json({ message: 'No user with that ID' })
@@ -57,11 +64,10 @@ module.exports = {
               ),
               console.log(user.username),
               console.log(user.thoughts)
-            )
-          //delete reactions associated with user as well
-          //pull friends of user
+            ),
+            res.json({ message: 'User and associated thoughts and reactions deleted!' })
       )
-      .then(() => res.json({ message: 'User and associated thoughts and reactions deleted!' }))
+      //.then(() => res.json({ message: 'User and associated thoughts and reactions deleted!' }))
       .catch((err) => res.status(500).json(err));
   },
   // Adds a friend to an user. This method is unique in that we add the entire body of the  rather than the ID with the mongodb $addToSet operator.
