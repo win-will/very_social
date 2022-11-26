@@ -47,11 +47,12 @@ const lorum = [
   'pretium',
   'quis',
 ];
-
-const getRandomUsername = () =>
-  `${usernames[genRandomIndex(usernames)]}${genRandomIndex(usernames)}`;
+const genRandomNumber = () => Math.floor(Math.random() * 10000);
 
 const genRandomIndex = (arr) => Math.floor(Math.random() * arr.length);
+
+const getRandomUsername = () =>
+  `${usernames[genRandomIndex(usernames)]}${genRandomNumber()}`;
 
 const getRandomWord = () => `${lorum[genRandomIndex(lorum)]}`;
 

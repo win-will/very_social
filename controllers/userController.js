@@ -61,9 +61,7 @@ module.exports = {
               await User.updateMany(
                 { },
                 { $pull: {friends: { userId: user._id } } }
-              ),
-              console.log(user.username),
-              console.log(user.thoughts)
+              )
             ),
             res.json({ message: 'User and associated thoughts and reactions deleted!' })
       )

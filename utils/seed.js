@@ -20,9 +20,10 @@ connection.once('open', async () => {
   const reactions = [];
 
   for (let i = 0; i < 10; i++) {
-
+    let username = getRandomUsername();
     usernames.push({
-      username: getRandomUsername(),
+      username: username,
+      email: `${username}@test.com`,
     });
   }
 
@@ -40,7 +41,7 @@ connection.once('open', async () => {
   for (let i = 0; i < 10; i++) {
     thoughts.push({
       username: usernames[i].username,
-      thoughtsBody: getRandomText(7),
+      thoughtText: getRandomText(7),
       reactions: [reactions[i]._id],
     });
   }
@@ -53,12 +54,8 @@ connection.once('open', async () => {
 
     let user = await User.findOneAndUpdate(
       { _id: usernames[i]._id },
-      { email: `${usernames[i].username}@test.com`,
-        thoughts: [thoughts[i]._id],
-      },
-      {
-        new: true
-      }
+      { thoughts: [thoughts[i]._id],},
+      { new: true }
     );
     // console.log(user.email);
   }

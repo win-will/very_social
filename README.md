@@ -1,4 +1,4 @@
-### Very Social
+# Very Social
 
 ## Description
 A social network web application where users can share their thoughts, react to friends’ thoughts, and create a friend list. 
@@ -25,6 +25,13 @@ WHEN I test API POST and DELETE routes in Insomnia
 THEN I am able to successfully create and delete reactions to thoughts and add and remove friends to a user’s friend list
 ```
 
+## Walkthrough Video
+
+https://drive.google.com/file/d/1Klus49qDnyJXSUKchVUfau-i7HbE2Zhj/view
+
 ## Mock-up
 
-## Walkthrough Video
+![API Calls for the application](./assets/images/18-nosql-homework-demo-01.gif)
+![API Calls for the application](./assets/images/18-nosql-homework-demo-02.gif)
+![API Calls for the application](./assets/images/18-nosql-homework-demo-03.gif)
+![API Calls for the application](./assets/images/18-nosql-homework-demo-04.gif)

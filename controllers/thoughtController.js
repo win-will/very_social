@@ -37,7 +37,7 @@ module.exports = {
     Thoughts.findOneAndUpdate(
       { _id: req.params.thoughtId },
       { $set: req.body },
-      { runValidators: true, new: true }
+      { new: true }
     )
       .then((thought) =>
         !thought
@@ -87,7 +87,7 @@ module.exports = {
     async removeReaction(req, res) {
       await Reactions.findOneAndDelete({ _id: req.params.reactionId })
         .then(async (reaction) => {
-          !thought
+          !reaction
           ? res.status(404).json({ message: 'No reaction with that ID' })
           : ( await Thoughts.findOneAndUpdate(
               { _id: req.params.thoughtId },
